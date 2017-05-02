@@ -30,7 +30,7 @@ class ancestors:
         
         self.to_skip = [ "address", "building" ]
 
-    def rebuild(self, feature, **kwargs):
+    def rebuild_feature(self, feature, **kwargs):
 
         props = feature["properties"]
         wofid = props["wof:id"]
@@ -80,6 +80,10 @@ class ancestors:
 
         logging.info("nothing has changed when rebuilding the hierarchy for %s" % wofid)
         return False
+
+    def rebuild_descendants(self, feature, **kwargs):
+
+        raise Exception, "Please write me"
 
     def append_parent_and_hierarchy(self, feature, **kwargs):
 
