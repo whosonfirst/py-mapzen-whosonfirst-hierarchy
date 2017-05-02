@@ -1,9 +1,7 @@
 import logging
 import deepdiff
 
-# PLEASE MOVE reverse_geocoordinates INTO py-mz-wof-utils
-
-import mapzen.whosonfirst.pip.utils
+import mapzen.whosonfirst.utils
 import mapzen.whosonfirst.placetypes
 
 class hierarchy:
@@ -86,7 +84,7 @@ class hierarchy:
         if not kwargs.has_key("filters"):
             kwargs["filters"] = {}
 
-        lat, lon = mapzen.whosonfirst.pip.utils.reverse_geocoordinates(feature)
+        lat, lon = mapzen.whosonfirst.utils.reverse_geocoordinates(feature)
 
         logging.debug("reverse geocoordinates for %s: %s, %s" % (feature['properties']['wof:id'], lat, lon))
 
@@ -96,7 +94,13 @@ class hierarchy:
         parents = list(pt.parents())
         append = False
 
+        to_skip = [ "address", "building" ]
+
         for p in parents:
+
+            if str(p) in to_skip:
+                logging.debug("skip point in polygon for %s" % str(p))
+                continue
 
             kwargs['filters']['wof:placetype_id'] = p.id()
             kwargs['as_feature'] = True
@@ -174,7 +178,7 @@ class hierarchy:
         if len(props.get("wof:hierarchy", [])) > 0:
             return True
             
-        lat, lon = mapzen.whosonfirst.pip.utils.reverse_geocoordinates(feature)
+        lat, lon = mapzen.whosonfirst.utils.reverse_geocoordinates(feature)
 
         pt = mapzen.whosonfirst.placetypes.placetype(props["wof:placetype"])
 
@@ -188,7 +192,7 @@ class hierarchy:
                 'filters': {
                     'wof:placetype_id' :  _pt.id(),
                     'wof:is_superseded': 0,
-                    'wof:is_deprecated': 0                    
+                    'wof:is_deprecated': 0
                 } ,
                 'as_feature': True,
             }
