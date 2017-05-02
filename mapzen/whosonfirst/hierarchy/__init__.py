@@ -91,16 +91,20 @@ class ancestors:
         props = feature['properties']
         pt = mapzen.whosonfirst.placetypes.placetype(props['wof:placetype'])
 
-        parents = list(pt.parents())
-        append = False
-
         to_skip = [ "address", "building" ]
+        parents = []
 
-        for p in parents:
+        for p in list(pt.parents()):
 
             if str(p) in to_skip:
                 logging.debug("skip point in polygon for %s" % str(p))
                 continue
+
+            parents.append(p)
+
+        append = False
+
+        for p in parents:
 
             kwargs['filters']['wof:placetype_id'] = p.id()
             kwargs['as_feature'] = True
@@ -165,6 +169,23 @@ class ancestors:
 
         if not append and kwargs.get("ensure_hierarchy", False):
             self.ensure_hierarchy(feature, **kwargs)
+
+        # ensure common placetypes are always present
+
+        if feature['properties']['wof:parent_id'] == -1:
+
+            # see what's happening? we're making a list of strings
+            common = map(str, mapzen.whosonfirst.placetypes.common())
+
+            for h in feature['properties']['wof:hierarchy']:
+
+                for p in common:
+
+                    k = "%s_id" % p
+
+                    if not h.has_key(k):
+                        h[k] = -1
+
 
     def ensure_hierarchy(self, feature, **kwargs):
 
