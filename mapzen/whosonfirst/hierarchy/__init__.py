@@ -88,6 +88,9 @@ class ancestors:
 
         logging.debug("reverse geocoordinates for %s: %s, %s" % (feature['properties']['wof:id'], lat, lon))
 
+        # get the list of possible parents for this feature, filtering out
+        # some things we know aren't going concerns right now
+
         props = feature['properties']
         pt = mapzen.whosonfirst.placetypes.placetype(props['wof:placetype'])
 
@@ -103,6 +106,9 @@ class ancestors:
             parents.append(p)
 
         append = False
+
+        # this is the meat of it - start looping through possible parents and see if there's
+        # a match - be sure to append the hierarchies for any match
 
         for p in parents:
 
@@ -172,7 +178,7 @@ class ancestors:
 
         # ensure common placetypes are always present
 
-        if feature['properties']['wof:parent_id'] == -1:
+        if feature['properties']['wof:parent_id'] in (-1, -3):
 
             # see what's happening? we're making a list of strings
             common = map(str, mapzen.whosonfirst.placetypes.common())
