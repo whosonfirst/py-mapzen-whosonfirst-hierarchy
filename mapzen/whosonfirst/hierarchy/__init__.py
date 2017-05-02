@@ -27,6 +27,8 @@ class ancestors:
 
         ambiguous = [ 'neighbourhood', 'microhood', 'campus', 'address', 'building', 'venue' ]
         self.is_ambiguous = ambiguous
+        
+        self.to_skip = [ "address", "building" ]
 
     def rebuild(self, feature, **kwargs):
 
@@ -94,12 +96,11 @@ class ancestors:
         props = feature['properties']
         pt = mapzen.whosonfirst.placetypes.placetype(props['wof:placetype'])
 
-        to_skip = [ "address", "building" ]
         parents = []
 
         for p in list(pt.parents()):
 
-            if str(p) in to_skip:
+            if str(p) in self.to_skip:
                 logging.debug("skip point in polygon for %s" % str(p))
                 continue
 
@@ -211,7 +212,26 @@ class ancestors:
 
         match = False
 
+        # build on the existing to_skip list and append possible parents
+        # because if we've gotten here then we're just going to assume
+        # that they've all failed and we're looking for something higher
+        # up the stack
+
+        to_skip = self.to_skip
+
+        for p in list(pt.parents()):
+            
+            p = str(p)
+
+            if not p in to_skip:
+                to_skip.append(p)
+
+        # go!
+
         for p in pt.ancestors(roles):
+
+            if str(p) in to_skip:
+                continue
 
             _pt = mapzen.whosonfirst.placetypes.placetype(p)
 
