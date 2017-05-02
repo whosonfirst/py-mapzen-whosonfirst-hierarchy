@@ -4,7 +4,7 @@ import deepdiff
 import mapzen.whosonfirst.utils
 import mapzen.whosonfirst.placetypes
 
-class hierarchy:
+class ancestors:
 
     def __init__(self, **kwargs):
 
