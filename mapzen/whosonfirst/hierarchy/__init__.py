@@ -1,3 +1,4 @@
+import os
 import logging
 import deepdiff
 
@@ -69,21 +70,125 @@ class ancestors:
         new_hier = props["wof:hierarchy"]
 
         if old_parent != new_parent:
-            logging.warning("parent ID has changed for %s" % wofid)
+            logging.info("parent ID has changed for %s" % wofid)
             return True
 
         d = deepdiff.DeepDiff(old_hier, new_hier)
 
         if len(d.keys()) > 0:
-            logging.warning("hierarchy has changed for %s" % wofid)
+            logging.info("hierarchy has changed for %s" % wofid)
+            logging.debug(d)
             return True
 
         logging.info("nothing has changed when rebuilding the hierarchy for %s" % wofid)
         return False
 
-    def rebuild_descendants(self, feature, **kwargs):
+    def rebuild_descendants(self, feature, cb, **kwargs):
 
-        raise Exception, "Please write me"
+        data_root = kwargs.get("data_root", None)
+        
+        placetypes = kwargs.get("placetypes", None)
+        exclude = kwargs.get("exclude", [])
+        include = kwargs.get("include", [])
+
+        updated = []
+
+        props = feature["properties"]
+
+        if placetypes == None:
+
+            logging.info("lookup descendants for %s" % props['wof:placetype'])
+
+            pt = mapzen.whosonfirst.placetypes.placetype(props['wof:placetype'])
+            placetypes = pt.descendants(['common', 'common_optional', 'optional'])
+
+        logging.info(";".join(placetypes))
+
+        # TO DO: use fancy-pants define placetypes by cli args (include, exclude) code to generate to_skip
+
+        to_skip = [
+            'constituency',
+            'address',
+            'building',
+        ]
+
+        for p in to_skip:
+
+            if not p in exclude:
+                exclude.append(p)
+
+        for p in placetypes:
+
+            if len(include) and not p in include:
+                continue
+
+            if p in exclude:
+                continue
+
+            logging.info("find intersecting descendants of placetype %s" % p)
+
+            _p = mapzen.whosonfirst.placetypes.placetype(p)
+            pid = _p.id()
+
+            pg_kwargs = {
+                'filters': {
+                    'wof:placetype_id': pid,
+                    'wof:is_superseded': 0,
+                    'wof:is_deprecated': 0
+                },
+                'as_feature': True,
+            }
+
+            if kwargs.get("buffer", None):
+                pg_kwargs["buffer"] = kwargs.get("buffer")
+
+            if p == 'venue':
+                pg_kwargs['use_centroid'] = True
+
+            intersects = 0
+
+            # TO DO: do these in parallel... translation: my kingdom for Go's
+            # sync.WaitGroup in python... (20161206/thisisaaronland)
+
+            for row in self.spatialdb.intersects_paginated(feature, **pg_kwargs):
+
+                intersects += 1
+                
+                logging.info("process intersection %s (%s)" % (row['properties']['wof:id'], row['properties']['wof:placetype']))
+
+                # load from disk - HOW CAN WE GET RID OF THIS PIECE?
+
+                props = row['properties']
+                wofid = props['wof:id']
+                repo = props['wof:repo']
+                
+                _data = os.path.join(data_root, repo)
+                _data = os.path.join(_data, "data")
+            
+                child = mapzen.whosonfirst.utils.load(_data, wofid)
+
+                _kwargs = {
+                    'as_feature': True,
+                    'filters': {
+                        'wof:placetype_id': pid,
+                        'wof:is_superseded': 0,
+                        'wof:is_deprecated': 0
+                    }
+                }
+
+                if self.rebuild_feature(child, **_kwargs):
+
+                    if not cb(child):
+                        logging.error("post-rebuild callback failed for %s" % wofid)
+                        continue
+
+                    if not repo in updated:
+                        updated.append(repo)
+                
+            logging.info("INTERSECTS %s: %s" % (p, intersects))
+        
+        return updated
+
 
     def append_parent_and_hierarchy(self, feature, **kwargs):
 
@@ -178,7 +283,9 @@ class ancestors:
 
                         feature["properties"]["wof:hierarchy"] = new_hier
 
-        if not append and kwargs.get("ensure_hierarchy", False):
+        # see this - we ensure the hierarchy by default
+
+        if not append and kwargs.get("ensure_hierarchy", True):
             self.ensure_hierarchy(feature, **kwargs)
 
         # ensure common placetypes are always present
