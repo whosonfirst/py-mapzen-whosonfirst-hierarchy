@@ -445,6 +445,15 @@ class ancestors:
         data_root = kwargs.get("data_root", None)
         rebuild_descendants = kwargs.get("rebuild_descendants", True)
 
+        # let's say that sometimes for the purpose of debugging you want
+        # to export all your changes to disk but not re-index them in a
+        # database because it's a lot easier and faster to `git stash` a
+        # repo than to wait around for a database to be indexed. the default
+        # is do both unless you say otherwise.
+
+        export = kwargs.get("export", True)
+        index = kwargs.get("import", True)
+
         debug = kwargs.get("debug", False)
         
         if not data_root:
@@ -465,12 +474,21 @@ class ancestors:
             if debug:
                 logging.info("debugging enabled but normally we would export %s (%s) here", props['wof:id'], props['wof:name'])
                 logging.debug(pprint.pformat(feature['properties']))
+            elif export == False:
+                logging.info("exporting is disabled but normally we would export %s (%s) here", props['wof:id'], props['wof:name'])                
+                logging.debug(pprint.pformat(feature['properties']))
             else:
                 exporter = mapzen.whosonfirst.export.flatfile(data)
                 path = exporter.export_feature(feature)
                 logging.info("update %s (%s)" % (props['wof:name'], path))
 
-            spatial_client.index_feature(feature, **kwargs)
+            # debugging behaviour is handled by the spatial_client thingy
+
+            if index == False:
+                logging.info("indexing is disabled but normally we would index %s (%s) here", props['wof:id'], props['wof:name'])
+            else:
+                spatial_client.index_feature(feature, **kwargs)
+
             return True
 
         updated = []
