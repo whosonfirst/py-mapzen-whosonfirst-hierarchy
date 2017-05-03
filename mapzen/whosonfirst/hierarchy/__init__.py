@@ -13,7 +13,7 @@ class ancestors:
         # it might be postgis, it might the WOF PIP server, it might be
         # something else (20170501/thisisaaronland)
 
-        self.spatialdb = kwargs.get("spatialdb", None)
+        self.spatial_client = kwargs.get("spatial_client", None)
 
         # see this: there's a bug in mapzen.whosonfirst.placetypes that causes
         # descendents to get bent when called multiple times... which is bent
@@ -150,7 +150,7 @@ class ancestors:
             # TO DO: do these in parallel... translation: my kingdom for Go's
             # sync.WaitGroup in python... (20161206/thisisaaronland)
 
-            for row in self.spatialdb.intersects_paginated(feature, **pg_kwargs):
+            for row in self.spatial_client.intersects_paginated(feature, **pg_kwargs):
 
                 intersects += 1
                 
@@ -225,7 +225,7 @@ class ancestors:
             kwargs['filters']['wof:placetype_id'] = p.id()
             kwargs['as_feature'] = True
 
-            possible = list(self.spatialdb.point_in_polygon(lat, lon, **kwargs))
+            possible = list(self.spatial_client.point_in_polygon(lat, lon, **kwargs))
 
             logging.debug("find parent (%s) for %s, %s : %s" % (p, lat, lon, len(possible)))
 
@@ -263,7 +263,7 @@ class ancestors:
                         'as_feature': True,
                     }
 
-                    possible = list(self.spatialdb.point_in_polygon(lat, lon, **kwargs))
+                    possible = list(self.spatial_client.point_in_polygon(lat, lon, **kwargs))
                     new_hier = []
 
                     if len(possible) > 0:
@@ -355,7 +355,7 @@ class ancestors:
                 'as_feature': True,
             }
 
-            possible = list(self.spatialdb.point_in_polygon(lat, lon, **kwargs))
+            possible = list(self.spatial_client.point_in_polygon(lat, lon, **kwargs))
 
             if self.append_possible_hierarchies(feature, possible):
                 match = True
