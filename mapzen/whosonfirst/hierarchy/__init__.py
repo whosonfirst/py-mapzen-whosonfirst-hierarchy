@@ -1,6 +1,7 @@
 import os
 import logging
 import deepdiff
+import pprint
 
 import mapzen.whosonfirst.utils
 import mapzen.whosonfirst.placetypes
@@ -460,7 +461,8 @@ class ancestors:
             data = os.path.join(root, "data")
             
             if debug:
-                logging.info("debugging enable but normall we would export %s (%s) here", props['wof:id'], props['wof:name'])
+                logging.info("debugging enabled but normally we would export %s (%s) here", props['wof:id'], props['wof:name'])
+                logging.debug(pprint.pformat(feature['properties']))
             else:
                 exporter = mapzen.whosonfirst.export.flatfile(data)
                 path = exporter.export_feature(feature)
