@@ -432,3 +432,61 @@ class ancestors:
                     feature['properties']['wof:parent_id'] = -3                    
 
             return True
+
+    def please_rename_me(self, feature, **kwargs):
+
+        # this is a helper method to wrap calling rebuild_feature and
+        # rebuild_descendants and to provide a common function (callback)
+        # for updating data in all the necessary places.
+
+        data_root = kwargs.get("data_root", None)
+        debug = kwargs.get("debug", False)
+        
+        if not data_root:
+            raise Exception, "You forgot to specify a data_root parameter"
+
+        spatial_client = self.spatial_client
+
+        # here's where we actually write things to disk and touch databases
+
+        def callback(feature):
+
+            props = feature["properties"]
+            repo = props["wof:repo"]
+
+            root = os.path.join(data_root, repo)
+            data = os.path.join(root, "data")
+            
+            if debug:
+                logging.info("debugging enable but normall we would export %s (%s) here", props['wof:id'], props['wof:name'])
+            else:
+                exporter = mapzen.whosonfirst.export.flatfile(data)
+                path = exporter.export_feature(feature)
+                logging.info("update %s (%s)" % (props['wof:name'], path))
+
+            spatial_client.index_feature(feature, **kwargs)
+            return True
+
+        updated = []
+
+        # first update the record itself and invoke the callback
+        # if there have been changes
+
+        if self.rebuild_feature(feature, **kwargs):
+
+            if callback(feature):
+                props = feature["properties"]
+                repo = props["wof:repo"]
+                updated.append(repo)
+
+        # now plough through through all the descendants of this place
+        # note the part where we pass the callback along in the args
+
+        for repo in self.rebuild_descendants(feature, callback, **kwargs):
+
+            if not repo in updated:
+                updated.append(repo)
+
+        # all done
+
+        return updated
