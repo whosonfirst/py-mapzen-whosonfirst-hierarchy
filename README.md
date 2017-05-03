@@ -52,7 +52,7 @@ ancs = mapzen.whosonfirst.hierarchy.ancestors(spatial_client=pg_client)
 
 data_root = "/usr/local/data"
 
-def cb (feature):
+def callback (feature):
 
     props = feature["properties"]
     repo = props["wof:repo"]
@@ -66,7 +66,7 @@ def cb (feature):
     logging.info("update %s (%s)" % (props['wof:name'], path))
     return True
 
-ancs.rebuild_descendants(feature, cb, data_root=data_root)
+ancs.rebuild_descendants(feature, callback, data_root=data_root)
 ```
 
 ## See also
