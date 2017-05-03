@@ -21,7 +21,7 @@ import mapzen.whosonfirst.spatial.postgres
 pg_client = mapzen.whosonfirst.spatial.postgres.postgis(**kwargs)
 ```
 
-### Rebuilding
+### Rebuilding the hierarchy (for a WOF record)
 
 To rebuild the hierarchy for a WOF record you would invoke the `rebuild_feature` method passing it a GeoJSON `Feature` thingy, like this:
 
@@ -37,7 +37,7 @@ has_changed = ancs.rebuild_feature(feature)
 
 The `rebuild_feature` method will update the in-memory data structure but what happens after that (like persisting it to disk) is up to you.
 
-### Rebuilding descendants
+### Rebuilding (the hierarchy for all) descendants (of a WOF record)
 
 To rebuild all the descendants for a WOF record you would call the `rebuild_descendants` method passing it both a GeoJSON `Feature` thingy and a callback to invoke for each updated record. For example, to write changes (to descendants) to disk you might do something like this:
 
