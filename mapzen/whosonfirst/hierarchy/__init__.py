@@ -225,6 +225,8 @@ class ancestors:
         for p in parents:
 
             kwargs['filters']['wof:placetype_id'] = p.id()
+            kwargs['filters']['wof:is_superseded'] = 0;
+            kwargs['filters']['wof:is_deprecated'] = 0;
             kwargs['as_feature'] = True
 
             possible = list(self.spatial_client.point_in_polygon(lat, lon, **kwargs))
