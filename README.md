@@ -66,8 +66,10 @@ def callback (feature):
     logging.info("update %s (%s)" % (props['wof:name'], path))
     return True
 
-ancs.rebuild_descendants(feature, callback, data_root=data_root)
+updated_repos = ancs.rebuild_descendants(feature, callback, data_root=data_root)
 ```
+
+The `rebuild_descendants` method will return a list of all the unique WOF repos which have records that have been changed.
 
 ## See also
 

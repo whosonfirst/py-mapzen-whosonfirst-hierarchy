@@ -180,15 +180,16 @@ class ancestors:
 
                     if not cb(child):
                         logging.error("post-rebuild callback failed for %s" % wofid)
+
+                        if kwargs.get("strict", False):
+                            raise Exception, "post-rebuild callback failed for %s" % wofid
+
                         continue
 
                     if not repo in updated:
                         updated.append(repo)
-                
-            logging.info("INTERSECTS %s: %s" % (p, intersects))
-        
+                        
         return updated
-
 
     def append_parent_and_hierarchy(self, feature, **kwargs):
 
@@ -430,4 +431,4 @@ class ancestors:
                 if feature['properties']['wof:placetype'] in self.is_ambiguous:
                     feature['properties']['wof:parent_id'] = -3                    
 
-            return True    
+            return True
