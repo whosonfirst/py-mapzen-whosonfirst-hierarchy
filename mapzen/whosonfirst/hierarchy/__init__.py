@@ -433,13 +433,15 @@ class ancestors:
 
             return True
 
-    def please_rename_me(self, feature, **kwargs):
+    def rebuild_and_export_feature(self, feature, **kwargs):
 
         # this is a helper method to wrap calling rebuild_feature and
         # rebuild_descendants and to provide a common function (callback)
         # for updating data in all the necessary places.
 
         data_root = kwargs.get("data_root", None)
+        rebuild_descendants = kwargs.get("rebuild_descendants", True)
+
         debug = kwargs.get("debug", False)
         
         if not data_root:
@@ -482,10 +484,12 @@ class ancestors:
         # now plough through through all the descendants of this place
         # note the part where we pass the callback along in the args
 
-        for repo in self.rebuild_descendants(feature, callback, **kwargs):
+        if rebuild_descendants:
 
-            if not repo in updated:
-                updated.append(repo)
+            for repo in self.rebuild_descendants(feature, callback, **kwargs):
+                
+                if not repo in updated:
+                    updated.append(repo)
 
         # all done
 
