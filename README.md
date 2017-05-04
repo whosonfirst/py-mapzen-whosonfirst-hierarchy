@@ -71,6 +71,23 @@ updated_repos = ancs.rebuild_descendants(feature, callback, data_root=data_root)
 
 The `rebuild_descendants` method will return a list of all the unique WOF repos which have records that have been changed.
 
+### Rebuilding and exporting (and indexing) the hierarchy for a WOF record (and all its descendants)
+
+To rebuild all the things - as in a given WOF record and all its descendants - and then both export the changes to disk and reindex those changes (with the spatial client) you would call the `rebuild_descendants_and_export_feature` method passing it both a GeoJSON `Feature` thingy and a callback. This is just a helper method that wraps calls to `rebuild_feature` and `rebuild_descendants` and defines an internal callback to export all changes (to disk or a database or whatever).
+
+```
+feature = mapzen.whosonfirst.utils.load("/usr/local/data/whosonfirst-data/data", 85834637)	# inner mission (SF)
+
+data_root = "/usr/local/data"
+
+ancs = mapzen.whosonfirst.hierarchy.ancestors(spatial_client=pg_client)
+updated_repos = ancs.rebuild_and_export_feature(feature, data_root=data_root)
+```
+
+The `rebuild_descendants_and_export_feature` method will return a list of all the unique WOF repos which have records that have been changed. 
+
+It seems like it would be nice to be able to define your own callback, but today you can not.
+
 ## See also
 
 * https://github.com/whosonfirst/py-mapzen-whosonfirst-spatial/tree/base
