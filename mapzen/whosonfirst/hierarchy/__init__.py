@@ -16,19 +16,12 @@ class ancestors:
 
         self.spatial_client = kwargs.get("spatial_client", None)
 
-        # see this: there's a bug in mapzen.whosonfirst.placetypes that causes
-        # descendents to get bent when called multiple times... which is bent
-        # (20161206/thisisaaronland)
+        # https://github.com/whosonfirst/py-mapzen-whosonfirst-hierarchy/issues/1
+        # -3 something might have multiple neighbourhoods
+	# -4 sometimes localities might have multiple counties (or at least NYC)
 
-        # I am not sure this is still true so someone should check whether this
-        # is still true... (20170501/thisisaaronland)
-
-        # pt = mapzen.whosonfirst.placetypes.placetype("neighbourhood")
-        # ambiguous = pt.descendents([ "common", "optional", "common_optional" ])
-        # ambiguous.insert(0, "neighbourhood")
-
-        ambiguous = [ 'neighbourhood', 'microhood', 'campus', 'address', 'building', 'venue' ]
-        self.is_ambiguous = ambiguous
+        self.is_ambiguous_three = [ 'microhood', 'campus', 'address', 'building', 'venue', 'intersection' ]
+        self.is_ambiguous_four = [ 'locality' ]
         
         self.to_skip = [ "address", "building" ]
 
@@ -431,8 +424,11 @@ class ancestors:
 
                 feature['properties']['wof:parent_id'] = -1
 
-                if feature['properties']['wof:placetype'] in self.is_ambiguous:
-                    feature['properties']['wof:parent_id'] = -3                    
+                if feature['properties']['wof:placetype'] in self.is_ambiguous_three:
+                    feature['properties']['wof:parent_id'] = -3
+
+                if feature['properties']['wof:placetype'] in self.is_ambiguous_four:
+                    feature['properties']['wof:parent_id'] = -4
 
             return True
 
