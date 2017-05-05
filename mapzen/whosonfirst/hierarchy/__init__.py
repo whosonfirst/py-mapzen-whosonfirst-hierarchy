@@ -47,13 +47,13 @@ class ancestors:
             logging.info("append parent and hierarchy for %s" % wofid)
             self.append_parent_and_hierarchy(feature, **kwargs)
 
-        elif "wof:parent_id" in controlled and old_parent == -3:
+        elif "wof:parent_id" in controlled and old_parent in (-3, -4):
 
-            logging.info("append hierarchy but not parent (-3) for %s" % wofid)
+            logging.info("append hierarchy but not parent (%s) for %s" % (old_parent, wofid))
             self.append_parent_and_hierarchy(feature, **kwargs)
 
             # this might happen automagically? not sure right now... (20170308/thisisaaronland)
-            feature["properties"]["wof:parent_id"] = -3
+            feature["properties"]["wof:parent_id"] = old_parent
 
         elif not "wof:hierarchy" in controlled:
 
@@ -294,7 +294,7 @@ class ancestors:
 
         # ensure common placetypes are always present
 
-        if feature['properties']['wof:parent_id'] in (-1, -3):
+        if feature['properties']['wof:parent_id'] in (-1, -3, -4):
 
             # see what's happening? we're making a list of strings
             common = map(str, mapzen.whosonfirst.placetypes.common())
