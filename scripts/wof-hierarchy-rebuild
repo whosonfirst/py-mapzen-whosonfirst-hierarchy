@@ -59,8 +59,12 @@ if __name__ == "__main__":
               parentid = props["wof:parent_id"]
               hierarchy = props["wof:hierarchy"]
 
-              logging.info("%s (%s) has parent ID %s - changed: %s" % (name, wofid, parentid, changed))
-              logging.debug(pprint.pformat(hierarchy))
+              if changed:
+                     logging.info("%s (%s) has CHANGED parent ID is now %s" % (name, wofid, parentid))
+                     logging.debug(pprint.pformat(hierarchy))
+              else:
+                     logging.info("%s (%s) has no changes (parent ID is still %s)" % (name, wofid, parentid))
+                     logging.debug(pprint.pformat(hierarchy))
 
               if options.update:
 
