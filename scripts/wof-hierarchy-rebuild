@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+# -*-python-*-
+
+import os
+import sys
+import logging
+import pprint
+
+import mapzen.whosonfirst.hierarchy
+import mapzen.whosonfirst.utils
+import mapzen.whosonfirst.export
+
+if __name__ == "__main__":
+
+       import optparse
+       opt_parser = optparse.OptionParser()
+	
+       opt_parser.add_option('-C', '--client', dest='client', action='store', default='postgis', help="A valid mapzen.whosonfirst.spatial spatial client. Default is 'postgis'")
+    
+       opt_parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False, help='Be chatty (default is false)')
+       options, args = opt_parser.parse_args()
+
+       if options.verbose:	
+              logging.basicConfig(level=logging.DEBUG)
+       else:
+              logging.basicConfig(level=logging.INFO)
+
+       sp_client = None
+
+       if options.client == 'postgis':
+
+              import mapzen.whosonfirst.spatial.postgres
+              sp_client = mapzen.whosonfirst.spatial.postgres.postgis()
+              
+       elif options.client == 'pip':
+
+              import mapzen.whosonfirst.spatial.whosonfirst
+              sp_client = mapzen.whosonfirst.spatial.whosonfirst.pip()
+       
+       else:
+              raise Exception, "Unsupported spatial client"
+              
+       ancs = mapzen.whosonfirst.hierarchy.ancestors(spatial_client=sp_client)
+
+       for path in args:
+
+              feature = mapzen.whosonfirst.utils.load_file(path)
+              changed = ancs.rebuild_feature(feature)
+
+              props = feature["properties"]
+              wofid = props["wof:id"]
+              name = props["wof:name"]
+
+              parentid = props["wof:parent_id"]
+              hierarchy = props["wof:hierarchy"]
+
+              logging.info("%s (%s) has parent ID %s - changed: %s" % (name, wofid, parentid, changed))
+              logging.debug(pprint.pformat(hierarchy))
+       

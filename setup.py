@@ -27,6 +27,7 @@ setup(
     url='https://github.com/whosonfirst/py-mapzen-whosonfirst-hierarchy',
     packages=packages,
     scripts=[
+        'scripts/wof-hierarchy-rebuild'
         ],
     download_url='https://github.com/whosonfirst/py-mapzen-whosonfirst-spatial/releases/tag/' + version,
     license='BSD')

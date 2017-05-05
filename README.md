@@ -88,6 +88,55 @@ The `rebuild_descendants_and_export_feature` method will return a list of all th
 
 It seems like it would be nice to be able to define your own callback, but today you can not.
 
+## Tools
+
+### wof-hierarchy-rebuild
+
+Rebuild the hierarchy for a WOF record. Currently this does _not_ write changes back to disk. It will (as an option). Today it does not.
+
+```
+./wof-hierarchy-rebuild -h
+Usage: wof-hierarchy-rebuild [options] /path/to/wof/record.geojson
+
+Options:
+  -h, --help            show this help message and exit
+  -C CLIENT, --client=CLIENT
+                        A valid mapzen.whosonfirst.spatial spatial client. Default is 'postgis'
+  -v, --verbose         Be chatty (default is false)
+```
+
+For example:
+
+```
+./wof-hierarchy-rebuild -v /usr/local/data/whosonfirst-data-venue-us-ca/data/907/212/647/907212647.geojson
+INFO:root:append parent and hierarchy for 907212647
+DEBUG:root:reverse geocoordinates for 907212647: 37.764943, -122.419496
+DEBUG:root:skip point in polygon for building
+DEBUG:root:skip point in polygon for address
+DEBUG:root:SELECT id, parent_id, placetype_id, meta, ST_AsGeoJSON(geom), ST_AsGeoJSON(centroid) FROM whosonfirst WHERE ST_Intersects(geom, ST_GeomFromGeoJSON(%s)) AND is_superseded=%s AND is_deprecated=%s AND placetype_id=%s
+DEBUG:root:find parent (intersection) for 37.764943, -122.419496 : 0
+DEBUG:root:0 possible hierarchyes for 907212647
+DEBUG:root:SELECT id, parent_id, placetype_id, meta, ST_AsGeoJSON(geom), ST_AsGeoJSON(centroid) FROM whosonfirst WHERE ST_Intersects(geom, ST_GeomFromGeoJSON(%s)) AND is_superseded=%s AND is_deprecated=%s AND placetype_id=%s
+DEBUG:root:find parent (campus) for 37.764943, -122.419496 : 0
+DEBUG:root:0 possible hierarchyes for 907212647
+DEBUG:root:SELECT id, parent_id, placetype_id, meta, ST_AsGeoJSON(geom), ST_AsGeoJSON(centroid) FROM whosonfirst WHERE ST_Intersects(geom, ST_GeomFromGeoJSON(%s)) AND is_superseded=%s AND is_deprecated=%s AND placetype_id=%s
+DEBUG:root:find parent (microhood) for 37.764943, -122.419496 : 0
+DEBUG:root:0 possible hierarchyes for 907212647
+DEBUG:root:SELECT id, parent_id, placetype_id, meta, ST_AsGeoJSON(geom), ST_AsGeoJSON(centroid) FROM whosonfirst WHERE ST_Intersects(geom, ST_GeomFromGeoJSON(%s)) AND is_superseded=%s AND is_deprecated=%s AND placetype_id=%s
+DEBUG:root:find parent (neighbourhood) for 37.764943, -122.419496 : 1
+DEBUG:root:1 possible hierarchyes for 907212647
+INFO:root:nothing has changed when rebuilding the hierarchy for 907212647
+INFO:root:Stamen Design (907212647) has parent ID 85834637 - changed: False
+DEBUG:root:[{u'continent_id': 102191575,
+  u'country_id': 85633793,
+  u'county_id': 102087579,
+  u'locality_id': 85922583,
+  u'macrohood_id': 1108830809,
+  u'neighbourhood_id': 85834637,
+  u'region_id': 85688637,
+  u'venue_id': 907212647}]
+```
+
 ## See also
 
 * https://github.com/whosonfirst/py-mapzen-whosonfirst-spatial/tree/base
