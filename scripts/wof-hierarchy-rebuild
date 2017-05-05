@@ -17,6 +17,9 @@ if __name__ == "__main__":
 	
        opt_parser.add_option('-C', '--client', dest='client', action='store', default='postgis', help="A valid mapzen.whosonfirst.spatial spatial client. Default is 'postgis'")
     
+       opt_parser.add_option('-U', '--update', dest='update', action='store_true', default=False, help="...")
+       opt_parser.add_option('-D', '--data_root', dest='data_root', action='store', default='/usr/local/data', help="...")
+
        opt_parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False, help='Be chatty (default is false)')
        options, args = opt_parser.parse_args()
 
@@ -44,6 +47,8 @@ if __name__ == "__main__":
 
        for path in args:
 
+              logging.info("rebuild hierarchy for %s" % path)
+
               feature = mapzen.whosonfirst.utils.load_file(path)
               changed = ancs.rebuild_feature(feature)
 
@@ -56,4 +61,15 @@ if __name__ == "__main__":
 
               logging.info("%s (%s) has parent ID %s - changed: %s" % (name, wofid, parentid, changed))
               logging.debug(pprint.pformat(hierarchy))
-       
+
+              if options.update:
+
+                     repo = props["wof:repo"]
+
+                     root = os.path.join(options.data_root, repo)
+                     data = os.path.join(root, data)
+
+                     exporter = mapzen.whosonfirst.exporter.flatfile(data)
+                     exporter.export_feature(feature)
+                     
+       sys.exit(0)
