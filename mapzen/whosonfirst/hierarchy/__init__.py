@@ -287,7 +287,13 @@ class ancestors:
 
         # ensure common placetypes are always present
 
-        if feature['properties']['wof:parent_id'] in (-1, -3, -4):
+        props = feature["properties"]
+        parent_id = props.get("wof:parent_id", None)
+
+        if not parent_id:
+            raise Exception, "WOF ID %s (%s) is missing a wof:parent_id property" % (props["wof:id"], props["wof:name"])
+
+        if parent_id in (-1, -3, -4):
 
             # see what's happening? we're making a list of strings
             common = map(str, mapzen.whosonfirst.placetypes.common())
