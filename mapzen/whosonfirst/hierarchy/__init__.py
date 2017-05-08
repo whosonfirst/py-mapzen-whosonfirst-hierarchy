@@ -4,6 +4,7 @@ import deepdiff
 import pprint
 
 import mapzen.whosonfirst.utils
+import mapzen.whosonfirst.export
 import mapzen.whosonfirst.placetypes
 
 class ancestors:
