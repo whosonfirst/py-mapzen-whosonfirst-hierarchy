@@ -462,7 +462,10 @@ class ancestors:
         def callback(feature):
 
             props = feature["properties"]
-            repo = props["wof:repo"]
+            repo = props.get("wof:repo", None)
+
+            if not repo:
+                raise Exception, "WOF ID %s (%s) does not have a wof:repo property" % (props["wof:id"], props["wof:name"])
 
             root = os.path.join(data_root, repo)
             data = os.path.join(root, "data")
