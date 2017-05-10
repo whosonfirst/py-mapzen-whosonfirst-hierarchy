@@ -441,11 +441,27 @@ class ancestors:
 
     def rebuild_and_export_feature(self, feature, **kwargs):
 
+        kwargs["rebuild_feature"] = True
+        kwargs["rebuild_descendants"] = True
+
+        return self.rebuild_and_export(feature, **kwargs)
+
+    def rebuild_and_export_descendants(self, feature, **kwargs):
+
+        kwargs["rebuild_feature"] = False
+        kwargs["rebuild_descendants"] = True
+
+        return self.rebuild_and_export(feature, **kwargs)
+
+    def rebuild_and_export(self, feature, **kwargs):
+
         # this is a helper method to wrap calling rebuild_feature and
         # rebuild_descendants and to provide a common function (callback)
         # for updating data in all the necessary places.
 
         data_root = kwargs.get("data_root", None)
+
+        rebuild_feature = kwargs.get("rebuild_feature", True)
         rebuild_descendants = kwargs.get("rebuild_descendants", True)
 
         # let's say that sometimes for the purpose of debugging you want
@@ -499,16 +515,18 @@ class ancestors:
 
         updated = []
 
-        # first update the record itself and invoke the callback
-        # if there have been changes
+        if rebuild_feature:
 
-        if self.rebuild_feature(feature, **kwargs):
+            # first update the record itself and invoke the callback
+            # if there have been changes
 
-            if callback(feature):
-                props = feature["properties"]
-                repo = props["wof:repo"]
-                updated.append(repo)
+            if self.rebuild_feature(feature, **kwargs):
 
+                if callback(feature):
+                    props = feature["properties"]
+                    repo = props["wof:repo"]
+                    updated.append(repo)
+                    
         # now plough through through all the descendants of this place
         # note the part where we pass the callback along in the args
 
