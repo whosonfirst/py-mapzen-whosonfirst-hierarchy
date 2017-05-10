@@ -61,8 +61,8 @@ class ancestors:
 
         props = feature["properties"]
 
-        new_parent = props["wof:parent_id"]
-        new_hier = props["wof:hierarchy"]
+        new_parent = props.get("wof:parent_id", -1)
+        new_hier = props.get("wof:hierarchy", {})
 
         if old_parent != new_parent:
             logging.info("parent ID has changed for %s" % wofid)
@@ -215,6 +215,9 @@ class ancestors:
 
         # this is the meat of it - start looping through possible parents and see if there's
         # a match - be sure to append the hierarchies for any match
+
+        if len(parents) == 0:
+            logging.debug("feature placetype (%s) has no parents" % str(pt))
 
         for p in parents:
 
