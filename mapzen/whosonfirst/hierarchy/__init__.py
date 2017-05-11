@@ -31,7 +31,7 @@ class ancestors:
         props = feature["properties"]
         wofid = props["wof:id"]
 
-        logging.debug("REBUILD %s (%s)" % (props["wof:id"], props["wof:name"]))
+        logging.debug("REBUILD %s (%s)" % (props["wof:id"], props.get("wof:name", "NO NAME")))
 
         controlled = props.get("wof:controlled", [])
 
@@ -85,7 +85,7 @@ class ancestors:
 
         props = feature["properties"]
 
-        logging.debug("rebuild descendants for %s (%s)" % (props["wof:id"], props["wof:name"]))
+        logging.debug("rebuild descendants for %s (%s)" % (props["wof:id"], props.get("wof:name", "NO NAME")))
 
         data_root = kwargs.get("data_root", None)
         
@@ -152,7 +152,7 @@ class ancestors:
             # sync.WaitGroup in python... (20161206/thisisaaronland)
 
             props = feature["properties"]
-            logging.debug("INTERSECTS %s (%s) where placetype is %s" % (props["wof:id"], props["wof:name"], p))
+            logging.debug("INTERSECTS %s (%s) where placetype is %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), p))
 
             for row in self.spatial_client.intersects_paginated(feature, **pg_kwargs):
 
@@ -184,7 +184,7 @@ class ancestors:
 
                 child_props = child["properties"]
 
-                logging.debug("rebuild descendent feature %s (%s) changed: %s" % (child_props["wof:id"], child_props["wof:name"], child_changed))
+                logging.debug("rebuild descendent feature %s (%s) changed: %s" % (child_props["wof:id"], child_props.get("wof:name", "NO NAME"), child_changed))
                     
                 if child_changed:
 
@@ -303,14 +303,14 @@ class ancestors:
 
         # see this - we ensure the hierarchy by default
 
-        logging.debug("append %s ensure hierarchy %s for %s (%s)" % (append, kwargs.get("ensure_hierarchy", True), props["wof:id"], props["wof:name"]))
+        logging.debug("append %s ensure hierarchy %s for %s (%s)" % (append, kwargs.get("ensure_hierarchy", True), props["wof:id"], props.get("wof:name", "NO NAME")))
 
         if not append and kwargs.get("ensure_hierarchy", True):
 
             props = feature["properties"]
             match = self.ensure_hierarchy(feature, **kwargs)
 
-            logging.debug("no append but ensure hierarchy for %s (%s) match: %s" % (props["wof:id"], props["wof:name"], match))
+            logging.debug("no append but ensure hierarchy for %s (%s) match: %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), match))
 
         # ensure common placetypes are always present
 
@@ -318,7 +318,7 @@ class ancestors:
         parent_id = props.get("wof:parent_id", None)
 
         if not parent_id:
-            raise Exception, "WOF ID %s (%s) is missing a wof:parent_id property" % (props["wof:id"], props["wof:name"])
+            raise Exception, "WOF ID %s (%s) is missing a wof:parent_id property" % (props["wof:id"], props.get("wof:name", "NO NAME"))
 
         if parent_id in (-1, -3, -4):
 
@@ -339,16 +339,16 @@ class ancestors:
 
         props = feature["properties"]
 
-        logging.debug("ensure hierarchy for %s (%s)" % (props["wof:id"], props["wof:name"]))
+        logging.debug("ensure hierarchy for %s (%s)" % (props["wof:id"], props.get("wof:name", "NO NAME")))
 
         roles = kwargs.get("roles", [ "common", "common_optional", "optional" ] )
 
         if props.get("wof:parent_id", 0) > 0:
-            logging.debug("not point in ensuring hierarchy for %s (%s): parent ID > 0" % (props["wof:id"], props["wof:name"]))
+            logging.debug("not point in ensuring hierarchy for %s (%s): parent ID > 0" % (props["wof:id"], props.get("wof:name", "NO NAME")))
             return True
 
         if len(props.get("wof:hierarchy", [])) > 1:
-            logging.debug("not point in ensuring hierarchy for %s (%s): multiple hierarchies" % (props["wof:id"], props["wof:name"]))
+            logging.debug("not point in ensuring hierarchy for %s (%s): multiple hierarchies" % (props["wof:id"], props.get("wof:name", "NO NAME")))
             return True
             
         lat, lon = mapzen.whosonfirst.utils.reverse_geocoordinates(feature)
@@ -526,28 +526,28 @@ class ancestors:
             repo = props.get("wof:repo", None)
 
             if not repo:
-                raise Exception, "WOF ID %s (%s) does not have a wof:repo property" % (props["wof:id"], props["wof:name"])
+                raise Exception, "WOF ID %s (%s) does not have a wof:repo property" % (props["wof:id"], props.get("wof:name", "NO NAME"))
 
             root = os.path.join(data_root, repo)
             data = os.path.join(root, "data")
             
             if debug:
-                logging.info("debugging enabled but normally we would export %s (%s) here", props['wof:id'], props['wof:name'])
+                logging.info("debugging enabled but normally we would export %s (%s) here", props['wof:id'], props.get("wof:name", "NO NAME"))
                 logging.debug(pprint.pformat(feature['properties']))
             elif export == False:
-                logging.info("exporting is disabled but normally we would export %s (%s) here", props['wof:id'], props['wof:name'])                
+                logging.info("exporting is disabled but normally we would export %s (%s) here", props['wof:id'], props.get("wof:name", "NO NAME"))                
                 logging.debug(pprint.pformat(feature['properties']))
             else:
-                logging.debug("EXPORT %s (%s)" % (props["wof:id"], props["wof:name"]))
+                logging.debug("EXPORT %s (%s)" % (props["wof:id"], props.get("wof:name", "NO NAME")))
                 exporter = mapzen.whosonfirst.export.flatfile(data)
                 path = exporter.export_feature(feature)
 
             # debugging behaviour is handled by the spatial_client thingy
 
             if index == False:
-                logging.info("indexing is disabled but normally we would index %s (%s) here", props['wof:id'], props['wof:name'])
+                logging.info("indexing is disabled but normally we would index %s (%s) here", props['wof:id'], props.get("wof:name", "NO NAME"))
             else:
-                logging.debug("REINDEX %s (%s)" % (props['wof:id'], props['wof:name']))
+                logging.debug("REINDEX %s (%s)" % (props['wof:id'], props.get("wof:name", "NO NAME")))
                 spatial_client.index_feature(feature, **kwargs)
 
             return True
