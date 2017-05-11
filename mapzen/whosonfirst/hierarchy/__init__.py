@@ -46,6 +46,7 @@ class ancestors:
         elif "wof:parent_id" in controlled and old_parent in (-3, -4):
 
             logging.info("append hierarchy but not parent (%s) for %s" % (old_parent, wofid))
+
             self.append_parent_and_hierarchy(feature, **kwargs)
 
             # this might happen automagically? not sure right now... (20170308/thisisaaronland)
@@ -82,6 +83,10 @@ class ancestors:
 
     def rebuild_descendants(self, feature, cb, **kwargs):
 
+        props = feature["properties"]
+
+        logging.debug("rebuild descendants for %s (%s)" % (props["wof:id"], props["wof:name"]))
+
         data_root = kwargs.get("data_root", None)
         
         placetypes = kwargs.get("placetypes", None)
@@ -89,8 +94,6 @@ class ancestors:
         include = kwargs.get("include", [])
 
         updated = []
-
-        props = feature["properties"]
 
         if placetypes == None:
 
@@ -177,7 +180,13 @@ class ancestors:
                     }
                 }
 
-                if self.rebuild_feature(child, **_kwargs):
+                child_changed = self.rebuild_feature(child, **_kwargs)
+
+                child_props = child["properties"]
+
+                logging.debug("rebuild descendent feature %s (%s) changed: %s" % (child_props["wof:id"], child_props["wof:name"], child_changed))
+                    
+                if child_changed:
 
                     if not cb(child):
                         logging.error("post-rebuild callback failed for %s" % wofid)
@@ -294,12 +303,14 @@ class ancestors:
 
         # see this - we ensure the hierarchy by default
 
+        logging.debug("append %s ensure hierarchy %s for %s (%s)" % (append, kwargs.get("ensure_hierarchy", True), props["wof:id"], props["wof:name"]))
+
         if not append and kwargs.get("ensure_hierarchy", True):
 
             props = feature["properties"]
-            logging.debug("no append but ensure hierarchy for %s (%s)" % (props["wof:id"], props["wof:name"]))
+            match = self.ensure_hierarchy(feature, **kwargs)
 
-            self.ensure_hierarchy(feature, **kwargs)
+            logging.debug("no append but ensure hierarchy for %s (%s) match: %s" % (props["wof:id"], props["wof:name"], match))
 
         # ensure common placetypes are always present
 
@@ -326,14 +337,18 @@ class ancestors:
 
     def ensure_hierarchy(self, feature, **kwargs):
 
-        roles = kwargs.get("roles", [ "common", "common_optional", "optional" ] )
-
         props = feature["properties"]
 
+        logging.debug("ensure hierarchy for %s (%s)" % (props["wof:id"], props["wof:name"]))
+
+        roles = kwargs.get("roles", [ "common", "common_optional", "optional" ] )
+
         if props.get("wof:parent_id", 0) > 0:
+            logging.debug("not point in ensuring hierarchy for %s (%s): parent ID > 0" % (props["wof:id"], props["wof:name"]))
             return True
 
-        if len(props.get("wof:hierarchy", [])) > 0:
+        if len(props.get("wof:hierarchy", [])) > 1:
+            logging.debug("not point in ensuring hierarchy for %s (%s): multiple hierarchies" % (props["wof:id"], props["wof:name"]))
             return True
             
         lat, lon = mapzen.whosonfirst.utils.reverse_geocoordinates(feature)
