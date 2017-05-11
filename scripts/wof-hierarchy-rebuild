@@ -20,6 +20,7 @@ if __name__ == "__main__":
        opt_parser.add_option('-U', '--update', dest='update', action='store_true', default=False, help="...")
        opt_parser.add_option('-D', '--data_root', dest='data_root', action='store', default='/usr/local/data', help="...")
 
+       opt_parser.add_option('-H', '--show-hierarchy', dest='show_hierarchy', action='store_true', default=False, help='...')
        opt_parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False, help='Be chatty (default is false)')
        options, args = opt_parser.parse_args()
 
@@ -61,10 +62,19 @@ if __name__ == "__main__":
 
               if changed:
                      logging.info("%s (%s) has CHANGED parent ID is now %s" % (name, wofid, parentid))
-                     logging.debug(pprint.pformat(hierarchy))
+
+                     if options.show_hierarchy:
+                            logging.info(pprint.pformat(hierarchy))
+                     else:
+                            logging.debug(pprint.pformat(hierarchy))
+
               else:
                      logging.info("%s (%s) has no changes (parent ID is still %s)" % (name, wofid, parentid))
-                     logging.debug(pprint.pformat(hierarchy))
+
+                     if options.show_hierarchy:
+                            logging.info(pprint.pformat(hierarchy))
+                     else:
+                            logging.debug(pprint.pformat(hierarchy))
 
               if options.update:
 
