@@ -219,6 +219,8 @@ class ancestors:
 
         append = False
 
+        logging.debug("possible reverse parents for %s: %s" % (feature['properties']['wof:id'], ";".join(map(str, parents))))
+
         # this is the meat of it - start looping through possible parents and see if there's
         # a match - be sure to append the hierarchies for any match
 
@@ -361,6 +363,8 @@ class ancestors:
             if str(p) in to_skip:
                 continue
 
+            logging.debug("try to ensure hierarchy for %s with placetype %s" % (props["wof:id"], p))
+
             _pt = mapzen.whosonfirst.placetypes.placetype(p)
 
             kwargs = {
@@ -374,9 +378,10 @@ class ancestors:
 
             possible = list(self.spatial_client.point_in_polygon(lat, lon, **kwargs))
 
-            logging.debug("ensure hierarchy with %s : %s possible" % (p, len(possible)))
+            logging.debug("ensure hierarchy for %s with placetype %s : %s possible" % (props["wof:id"], p, len(possible)))
 
             if self.append_possible_hierarchies(feature, possible):
+                logging.debug("successfully ensured hierarchy for %s with placetype %s" % (props["wof:id"], p))
                 match = True
                 break
 
