@@ -31,6 +31,8 @@ class ancestors:
         props = feature["properties"]
         wofid = props["wof:id"]
 
+        logging.debug("REBUILD %s (%s)" % (props["wof:id"], props["wof:name"]))
+
         controlled = props.get("wof:controlled", [])
 
         old_parent = props.get("wof:parent_id", -1)
@@ -144,6 +146,9 @@ class ancestors:
 
             # TO DO: do these in parallel... translation: my kingdom for Go's
             # sync.WaitGroup in python... (20161206/thisisaaronland)
+
+            props = feature["properties"]
+            logging.debug("INTERSECTS %s (%s) where placetype is %s" % (props["wof:id"], props["wof:name"], p))
 
             for row in self.spatial_client.intersects_paginated(feature, **pg_kwargs):
 
@@ -287,6 +292,10 @@ class ancestors:
         # see this - we ensure the hierarchy by default
 
         if not append and kwargs.get("ensure_hierarchy", True):
+
+            props = feature["properties"]
+            logging.debug("no append but ensure hierarchy for %s (%s)" % (props["wof:id"], props["wof:name"]))
+
             self.ensure_hierarchy(feature, **kwargs)
 
         # ensure common placetypes are always present
@@ -364,6 +373,8 @@ class ancestors:
 
             possible = list(self.spatial_client.point_in_polygon(lat, lon, **kwargs))
 
+            logging.debug("ensure hierarchy with %s : %s possible" % (p, len(possible)))
+
             if self.append_possible_hierarchies(feature, possible):
                 match = True
                 break
@@ -377,7 +388,7 @@ class ancestors:
 
         count = len(possible)
 
-        logging.debug("%s possible hierarchyes for %s" % (count, feature['properties']['wof:id']))
+        logging.debug("%s possible hierarchies for %s" % (count, feature['properties']['wof:id']))
 
         wofid = feature["properties"]["wof:id"]
         wofpt = "%s_id" % feature["properties"]["wof:placetype"]
@@ -446,6 +457,7 @@ class ancestors:
 
         kwargs["rebuild_feature"] = True
         kwargs["rebuild_descendants"] = True
+        kwargs["skip_check"] = True
 
         return self.rebuild_and_export(feature, **kwargs)
 
@@ -476,6 +488,8 @@ class ancestors:
         export = kwargs.get("export", True)
         index = kwargs.get("import", True)
 
+        skip_check = kwargs.get("skip_check", False)
+
         debug = kwargs.get("debug", False)
         
         if not data_root:
@@ -503,15 +517,16 @@ class ancestors:
                 logging.info("exporting is disabled but normally we would export %s (%s) here", props['wof:id'], props['wof:name'])                
                 logging.debug(pprint.pformat(feature['properties']))
             else:
+                logging.debug("EXPORT %s (%s)" % (props["wof:id"], props["wof:name"]))
                 exporter = mapzen.whosonfirst.export.flatfile(data)
                 path = exporter.export_feature(feature)
-                logging.info("update %s (%s)" % (props['wof:name'], path))
 
             # debugging behaviour is handled by the spatial_client thingy
 
             if index == False:
                 logging.info("indexing is disabled but normally we would index %s (%s) here", props['wof:id'], props['wof:name'])
             else:
+                logging.debug("REINDEX %s (%s)" % (props['wof:id'], props['wof:name']))
                 spatial_client.index_feature(feature, **kwargs)
 
             return True
@@ -523,7 +538,7 @@ class ancestors:
             # first update the record itself and invoke the callback
             # if there have been changes
 
-            if self.rebuild_feature(feature, **kwargs):
+            if self.rebuild_feature(feature, **kwargs) or skip_check:
 
                 if callback(feature):
                     props = feature["properties"]
