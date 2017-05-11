@@ -134,6 +134,7 @@ class ancestors:
                     'wof:is_deprecated': 0
                 },
                 'as_feature': True,
+                'check_centroid': True,
             }
 
             if kwargs.get("buffer", None):
