@@ -530,7 +530,17 @@ class ancestors:
             repo = props.get("wof:repo", None)
 
             if not repo:
+
+                # TBD so for now we default to being hyper-conservative
+                # (20170512/thisisaaronland)
+
                 raise Exception, "WOF ID %s (%s) does not have a wof:repo property" % (props["wof:id"], props.get("wof:name", "NO NAME"))
+
+                """
+                logging.warning("WOF ID %s (%s) does not have a wof:repo property" % (props["wof:id"], props.get("wof:name", "NO NAME")))
+                repo = "whosonfirst-data"
+                props["wof:repo"] = repo
+                """
 
             root = os.path.join(data_root, repo)
             data = os.path.join(root, "data")

@@ -14,7 +14,7 @@ The second thing to know is that because Python doesn't really implement "interf
 
 The third thing to know is that there are valid reasons for having multiple different clients. These might include the need to update things locally, infrastructure burden (not setting up PostGIS), delegating all spatial operations to a remote service and so on. This can introduce an element of bad craziness involving data synchronization and completeness (for example a remote PIP server may not include a given placetype). Life is complicated that way.
 
-For complete documentation of all the available spatial clients please consult the [py-mapzen-whosonfirst-spatial]() package. For the rest of this document we'll assume that you're using the PostGIS client, which is instantiated like this:
+For complete documentation of all the available spatial clients please consult the [py-mapzen-whosonfirst-spatial](https://github.com/whosonfirst/py-mapzen-whosonfirst-spatial) package. For the rest of this document we'll assume that you're using the PostGIS client, which is instantiated like this:
 
 ```
 import mapzen.whosonfirst.spatial.postgres
@@ -139,4 +139,4 @@ DEBUG:root:[{u'continent_id': 102191575,
 
 ## See also
 
-* https://github.com/whosonfirst/py-mapzen-whosonfirst-spatial/tree/base
+* https://github.com/whosonfirst/py-mapzen-whosonfirst-spatial/
