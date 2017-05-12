@@ -85,13 +85,17 @@ class ancestors:
 
         props = feature["properties"]
 
-        logging.debug("rebuild descendants for %s (%s)" % (props["wof:id"], props.get("wof:name", "NO NAME")))
+        logging.debug("rebuild descendants for %s (%s) w/ kwargs %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), kwargs))
 
         data_root = kwargs.get("data_root", None)
         
         placetypes = kwargs.get("placetypes", None)
         exclude = kwargs.get("exclude", [])
         include = kwargs.get("include", [])
+
+        logging.debug("rebuild descendants for %s (%s)" % (props["wof:id"], props.get("wof:name", "NO NAME")))
+        logging.debug("exclude descendants for %s (%s) %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), ";".join(exclude)))
+        logging.debug("include descendants for %s (%s) %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), ";".join(include)))
 
         updated = []
 
@@ -125,7 +129,7 @@ class ancestors:
             if p in exclude:
                 continue
 
-            logging.info("find intersecting descendants of placetype %s" % p)
+            logging.info("find intersecting descendants of placetype %s (for %s (%s))" % (p, props["wof:id"], props.get("wof:name", "NO NAME")))
 
             _p = mapzen.whosonfirst.placetypes.placetype(p)
             pid = _p.id()
@@ -239,8 +243,8 @@ class ancestors:
         for p in parents:
 
             kwargs['filters']['wof:placetype_id'] = p.id()
-            kwargs['filters']['wof:is_superseded'] = 0;
-            kwargs['filters']['wof:is_deprecated'] = 0;
+            kwargs['filters']['wof:is_superseded'] = 0
+            kwargs['filters']['wof:is_deprecated'] = 0
             kwargs['as_feature'] = True
 
             possible = list(self.spatial_client.point_in_polygon(lat, lon, **kwargs))
@@ -333,7 +337,9 @@ class ancestors:
             pt = mapzen.whosonfirst.placetypes.placetype(p)
 
             # see what's happening? we're making a list of strings
-            common = map(str, pt.ancestors())
+            common = map(str, pt.ancestors(['common']))
+
+            logging.debug("ensure common ancestors for %s (%s) which is a %s : %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), pt, ";".join(common)))
 
             for h in feature['properties']['wof:hierarchy']:
 
@@ -419,7 +425,9 @@ class ancestors:
 
         count = len(possible)
 
-        logging.debug("%s possible hierarchies for %s" % (count, feature['properties']['wof:id']))
+        props = feature["properties"]
+
+        logging.debug("append %s possible hierarchies for %s (%s)" % (count, props["wof:id"], props.get("wof:name", "NO NAME")))
 
         wofid = feature["properties"]["wof:id"]
         wofpt = "%s_id" % feature["properties"]["wof:placetype"]
@@ -432,7 +440,7 @@ class ancestors:
                 feature['properties']['wof:parent_id'] = -1
 
             if ensure_hierarchy:
-                logging.debug("no possible - ensure hier")
+                logging.debug("no possible parent hierachies for %s (%s) - ensure ancestor hierarchy" (props["wof:id"], props.get("wof:name", "NO NAME"))
                 self.ensure_hierarchy(feature, as_feature=True)
 
             return False
@@ -501,6 +509,10 @@ class ancestors:
 
     def rebuild_and_export(self, feature, **kwargs):
 
+        props = feature["properties"]
+
+        logging.debug("rebuild and export for %s (%s) w/ kwargs %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), kwargs))
+
         # this is a helper method to wrap calling rebuild_feature and
         # rebuild_descendants and to provide a common function (callback)
         # for updating data in all the necessary places.
@@ -540,13 +552,11 @@ class ancestors:
                 # TBD so for now we default to being hyper-conservative
                 # (20170512/thisisaaronland)
 
-                raise Exception, "WOF ID %s (%s) does not have a wof:repo property" % (props["wof:id"], props.get("wof:name", "NO NAME"))
+                # raise Exception, "WOF ID %s (%s) does not have a wof:repo property" % (props["wof:id"], props.get("wof:name", "NO NAME"))
 
-                """
                 logging.warning("WOF ID %s (%s) does not have a wof:repo property" % (props["wof:id"], props.get("wof:name", "NO NAME")))
                 repo = "whosonfirst-data"
                 props["wof:repo"] = repo
-                """
 
             root = os.path.join(data_root, repo)
             data = os.path.join(root, "data")
