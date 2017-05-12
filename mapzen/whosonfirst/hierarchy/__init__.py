@@ -318,7 +318,11 @@ class ancestors:
         parent_id = props.get("wof:parent_id", None)
 
         if not parent_id:
-            raise Exception, "WOF ID %s (%s) is missing a wof:parent_id property" % (props["wof:id"], props.get("wof:name", "NO NAME"))
+
+            logging.warning("WOF ID %s (%s) is missing a wof:parent_id property" % (props["wof:id"], props.get("wof:name", "NO NAME")))
+
+            parent_id = -1
+            props["wof:parent_id"] = parent_id
 
         if parent_id in (-1, -3, -4):
 

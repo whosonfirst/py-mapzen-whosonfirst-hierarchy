@@ -81,9 +81,9 @@ if __name__ == "__main__":
                      repo = props["wof:repo"]
 
                      root = os.path.join(options.data_root, repo)
-                     data = os.path.join(root, data)
+                     data = os.path.join(root, "data")
 
-                     exporter = mapzen.whosonfirst.exporter.flatfile(data)
+                     exporter = mapzen.whosonfirst.export.flatfile(data)
                      exporter.export_feature(feature)
                      
        sys.exit(0)
