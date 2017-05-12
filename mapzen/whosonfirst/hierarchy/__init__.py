@@ -440,7 +440,7 @@ class ancestors:
                 feature['properties']['wof:parent_id'] = -1
 
             if ensure_hierarchy:
-                logging.debug("no possible parent hierachies for %s (%s) - ensure ancestor hierarchy" (props["wof:id"], props.get("wof:name", "NO NAME"))
+                logging.debug("no possible parent hierachies for %s (%s) - ensure ancestor hierarchy" (props["wof:id"], props.get("wof:name", "NO NAME")))
                 self.ensure_hierarchy(feature, as_feature=True)
 
             return False
