@@ -326,8 +326,14 @@ class ancestors:
 
         if parent_id in (-1, -3, -4):
 
+            # find the things that are ancestors of this placetype and
+            # ensure that they are in the hierarchy
+
+            pt = props["wof:placetype"]
+            pt = mapzen.whosonfirst.placetypes.placetype(p)
+
             # see what's happening? we're making a list of strings
-            common = map(str, mapzen.whosonfirst.placetypes.common())
+            common = map(str, pt.ancestors())
 
             for h in feature['properties']['wof:hierarchy']:
 
