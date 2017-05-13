@@ -26,12 +26,17 @@ class ancestors:
         
         self.to_skip = [ "address", "building" ]
 
+    def debug(self, feature, msg):
+
+        props = feature["properties"]
+        logging.debug("[%s][%s] %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), msg))
+
     def rebuild_feature(self, feature, **kwargs):
 
         props = feature["properties"]
         wofid = props["wof:id"]
 
-        logging.debug("REBUILD %s (%s)" % (props["wof:id"], props.get("wof:name", "NO NAME")))
+        self.debug(feature, "rebuild feature")
 
         controlled = props.get("wof:controlled", [])
 
@@ -83,9 +88,9 @@ class ancestors:
 
     def rebuild_descendants(self, feature, cb, **kwargs):
 
-        props = feature["properties"]
+        self.debug(feature, "rebuild descendants w/ kwargs %s" % kwargs)
 
-        logging.debug("rebuild descendants for %s (%s) w/ kwargs %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), kwargs))
+        props = feature["properties"]
 
         data_root = kwargs.get("data_root", None)
         
@@ -156,7 +161,8 @@ class ancestors:
             # sync.WaitGroup in python... (20161206/thisisaaronland)
 
             props = feature["properties"]
-            logging.debug("INTERSECTS %s (%s) where placetype is %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), p))
+
+            self.debug(feature, "find intersecting places where placetype is %s" % p)
 
             for row in self.spatial_client.intersects_paginated(feature, **pg_kwargs):
 
@@ -185,10 +191,9 @@ class ancestors:
                 }
 
                 child_changed = self.rebuild_feature(child, **_kwargs)
-
                 child_props = child["properties"]
 
-                logging.debug("rebuild descendent feature %s (%s) changed: %s" % (child_props["wof:id"], child_props.get("wof:name", "NO NAME"), child_changed))
+                self.debug(child, "rebuilt feature (descendant of %s (%s)) - changes: %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), child_changed))
                     
                 if child_changed:
 
@@ -210,6 +215,10 @@ class ancestors:
         if not kwargs.has_key("filters"):
             kwargs["filters"] = {}
 
+        props = feature['properties']
+
+        self.debug(feature, "append parent and hierarchy")
+
         lat, lon = mapzen.whosonfirst.utils.reverse_geocoordinates(feature)
 
         logging.debug("reverse geocoordinates for %s: %s, %s" % (feature['properties']['wof:id'], lat, lon))
@@ -217,7 +226,6 @@ class ancestors:
         # get the list of possible parents for this feature, filtering out
         # some things we know aren't going concerns right now
 
-        props = feature['properties']
         pt = mapzen.whosonfirst.placetypes.placetype(props['wof:placetype'])
 
         parents = []
@@ -225,14 +233,14 @@ class ancestors:
         for p in list(pt.parents()):
 
             if str(p) in self.to_skip:
-                logging.debug("skip point in polygon for %s" % str(p))
+                self.debug(feature, "skip point in polygon for %s (%s)" % (str(p), ";".join(self.to_skip)))
                 continue
 
             parents.append(p)
 
         append = False
 
-        logging.debug("possible reverse parents for %s: %s" % (feature['properties']['wof:id'], ";".join(map(str, parents))))
+        self.debug(feature, "possible reverse parents : %s" % ";".join(map(str, parents)))
 
         # this is the meat of it - start looping through possible parents and see if there's
         # a match - be sure to append the hierarchies for any match
@@ -307,16 +315,16 @@ class ancestors:
 
         # see this - we ensure the hierarchy by default
 
-        logging.debug("append %s ensure hierarchy %s for %s (%s)" % (append, kwargs.get("ensure_hierarchy", True), props["wof:id"], props.get("wof:name", "NO NAME")))
+        self.debug(feature, "append: %s ensure_hierarchy: %s" % (append, kwargs.get("ensure_hierarchy", True)))
 
         if not append and kwargs.get("ensure_hierarchy", True):
 
             props = feature["properties"]
             match = self.ensure_hierarchy(feature, **kwargs)
 
-            logging.debug("no append but ensure hierarchy for %s (%s) match: %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), match))
+            self.debug(feature, "no append but ensure hierarchy - matches: %s" % match)
 
-        # ensure common placetypes are always present
+        # ensure common properties and ancestors are always present
 
         props = feature["properties"]
         parent_id = props.get("wof:parent_id", None)
@@ -328,28 +336,27 @@ class ancestors:
             parent_id = -1
             props["wof:parent_id"] = parent_id
 
-        if parent_id in (-1, -3, -4):
+        # find the things that are ancestors of this placetype and
+        # ensure that they are in the hierarchy
 
-            # find the things that are ancestors of this placetype and
-            # ensure that they are in the hierarchy
+        pt = props["wof:placetype"]
+        pt = mapzen.whosonfirst.placetypes.placetype(p)
 
-            pt = props["wof:placetype"]
-            pt = mapzen.whosonfirst.placetypes.placetype(p)
+        # see what's happening? we're making a list of strings
 
-            # see what's happening? we're making a list of strings
-            common = map(str, pt.ancestors(['common']))
+        common = map(str, pt.ancestors(['common']))
 
-            logging.debug("ensure common ancestors for %s (%s) which is a %s : %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), pt, ";".join(common)))
+        self.debug(feature, "ensure common ancestors (is a %s) : %s" % (pt, ";".join(common)))
 
-            for h in feature['properties']['wof:hierarchy']:
+        for h in feature['properties']['wof:hierarchy']:
 
-                for p in common:
+            for p in common:
 
-                    k = "%s_id" % p
+                k = "%s_id" % p
 
-                    if not h.has_key(k):
-                        h[k] = -1
-
+                if not h.has_key(k):
+                    self.debug(feature, "set %s to -1" % k)
+                    h[k] = -1
 
     def ensure_hierarchy(self, feature, **kwargs):
 
@@ -386,6 +393,8 @@ class ancestors:
 
             if not p in to_skip:
                 to_skip.append(p)
+
+        self.debug(feature, "update to skip list to be : %s (%s)" % (";".join(to_skip), ";".join(self.to_skip)))
 
         # go!
 
@@ -427,7 +436,7 @@ class ancestors:
 
         props = feature["properties"]
 
-        logging.debug("append %s possible hierarchies for %s (%s)" % (count, props["wof:id"], props.get("wof:name", "NO NAME")))
+        self.debug(feature, "append %s possible hierarchies" % count)
 
         wofid = feature["properties"]["wof:id"]
         wofpt = "%s_id" % feature["properties"]["wof:placetype"]
@@ -440,7 +449,7 @@ class ancestors:
                 feature['properties']['wof:parent_id'] = -1
 
             if ensure_hierarchy:
-                logging.debug("no possible parent hierachies for %s (%s) - ensure ancestor hierarchy" (props["wof:id"], props.get("wof:name", "NO NAME")))
+                self.debug(feature, "no possible parent hierachies")
                 self.ensure_hierarchy(feature, as_feature=True)
 
             return False
@@ -463,7 +472,7 @@ class ancestors:
                 feature['properties']['wof:parent_id'] = parent_id
 
             if parent_id == -1 and ensure_hierarchy:
-                logging.debug("no parent - ensure hier")
+                self.debug(feature, "no possible parents - ensure ancestor hierarchy")
                 self.ensure_hierarchy(feature, as_feature=True)
 
             return True
@@ -511,7 +520,7 @@ class ancestors:
 
         props = feature["properties"]
 
-        logging.debug("rebuild and export for %s (%s) w/ kwargs %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), kwargs))
+        self.debug(feature, "rebuild and export w/ kwargs %s" % kwargs)
 
         # this is a helper method to wrap calling rebuild_feature and
         # rebuild_descendants and to provide a common function (callback)
@@ -546,6 +555,8 @@ class ancestors:
 
             props = feature["properties"]
             repo = props.get("wof:repo", None)
+
+            self.debug(feature, "invoking rebuild and export callback")
 
             if not repo:
 
