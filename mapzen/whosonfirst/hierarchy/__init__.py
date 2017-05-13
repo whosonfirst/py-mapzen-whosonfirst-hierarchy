@@ -385,7 +385,16 @@ class ancestors:
         # that they've all failed and we're looking for something higher
         # up the stack
 
-        to_skip = self.to_skip
+        # see this we're building a new array rather than assigning self.to_skip
+        # to a left-hand value since python will treat it as a reference and
+        # eventually self.to_skip will be full of all kinds of stuff that any
+        # kind of meaningful processing will be impossible... computers.
+        # (20170512/thisisaaronland)
+
+        to_skip = []
+
+        for p in self.to_skip:
+            to_skip.append(p)
 
         for p in list(pt.parents()):
             
