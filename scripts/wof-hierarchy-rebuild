@@ -15,12 +15,17 @@ if __name__ == "__main__":
        import optparse
        opt_parser = optparse.OptionParser()
 	
-       opt_parser.add_option('-C', '--client', dest='client', action='store', default='postgis', help="A valid mapzen.whosonfirst.spatial spatial client. Default is 'postgis'")
+       opt_parser.add_option('-C', '--client', dest='client', action='store', default='postgis', help="A valid mapzen.whosonfirst.spatial spatial client. (default is 'postgis')")
     
-       opt_parser.add_option('-U', '--update', dest='update', action='store_true', default=False, help="...")
-       opt_parser.add_option('-D', '--data_root', dest='data_root', action='store', default='/usr/local/data', help="...")
+       opt_parser.add_option('-U', '--update', dest='update', action='store_true', default=False, help="... (default is False)")
+       opt_parser.add_option('-D', '--data_root', dest='data_root', action='store', default='/usr/local/data', help="... (default is '/usr/local/data')")
 
-       opt_parser.add_option('-H', '--show-hierarchy', dest='show_hierarchy', action='store_true', default=False, help='...')
+       opt_parser.add_option('--pgis-host', dest='pgis_host', action='store', default='localhost', help="...(default is 'localhost')")
+       opt_parser.add_option('--pgis-username', dest='pgis_username', action='store', default='whosonfirst', help="... (default is 'whosonfirst')")
+       opt_parser.add_option('--pgis-password', dest='pgis_password', action='store', default=None, help="... (default is None)")
+       opt_parser.add_option('--pgis-database', dest='pgis_database', action='store', default='whosonfirst', help="... (default is 'whosonfirst')")
+       
+       opt_parser.add_option('-H', '--show-hierarchy', dest='show_hierarchy', action='store_true', default=False, help='... (default is False)')
        opt_parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False, help='Be chatty (default is false)')
        options, args = opt_parser.parse_args()
 
@@ -34,7 +39,15 @@ if __name__ == "__main__":
        if options.client == 'postgis':
 
               import mapzen.whosonfirst.spatial.postgres
-              sp_client = mapzen.whosonfirst.spatial.postgres.postgis()
+
+              pg_args = {
+                     "dbname": options.pgis_database,
+                     "username": options.pgis_username,
+                     "password": options.pgis_password,
+                     "host": options.pgis_host,
+              }
+              
+              sp_client = mapzen.whosonfirst.spatial.postgres.postgis(**pg_args)
               
        elif options.client == 'pip':
 

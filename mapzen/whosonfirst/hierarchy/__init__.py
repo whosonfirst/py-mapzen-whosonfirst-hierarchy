@@ -40,16 +40,20 @@ class ancestors:
 
         controlled = props.get("wof:controlled", [])
 
+        self.debug(feature, "controlled is %s" % controlled)
+
         old_parent = props.get("wof:parent_id", -1)
         old_hier = props.get("wof:hierarchy", {})
 
         if not "wof:parent_id" in controlled:
 
+            logging.debug("wof:parent_id NOT IN in controlled")
             logging.info("append parent and hierarchy for %s" % wofid)
             self.append_parent_and_hierarchy(feature, **kwargs)
 
         elif "wof:parent_id" in controlled and old_parent in (-3, -4):
 
+            logging.debug("wof:parent_id in controlled and (old) parent_id is %s" % old_parent)
             logging.info("append hierarchy but not parent (%s) for %s" % (old_parent, wofid))
 
             self.append_parent_and_hierarchy(feature, **kwargs)
@@ -59,6 +63,7 @@ class ancestors:
 
         elif not "wof:hierarchy" in controlled:
 
+            logging.debug("wof:hierarchy in controlled")
             logging.info("ensure hierarchy for %s" % wofid)
             self.ensure_hierarchy(feature, **kwargs)
 
