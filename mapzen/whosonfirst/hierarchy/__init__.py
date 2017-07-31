@@ -148,7 +148,8 @@ class ancestors:
                 'filters': {
                     'wof:placetype_id': pid,
                     'wof:is_superseded': 0,
-                    'wof:is_deprecated': 0
+                    'wof:is_deprecated': 0,
+                    'wof:is_ceased': 0
                 },
                 'as_feature': True,
                 'check_centroid': True,
@@ -191,7 +192,8 @@ class ancestors:
                     'filters': {
                         'wof:placetype_id': pid,
                         'wof:is_superseded': 0,
-                        'wof:is_deprecated': 0
+                        'wof:is_deprecated': 0,
+                        'wof:is_ceased': 0
                     }
                 }
 
@@ -258,6 +260,7 @@ class ancestors:
             kwargs['filters']['wof:placetype_id'] = p.id()
             kwargs['filters']['wof:is_superseded'] = 0
             kwargs['filters']['wof:is_deprecated'] = 0
+            kwargs['filters']['wof:is_ceased'] = 0
             kwargs['as_feature'] = True
 
             possible = list(self.spatial_client.point_in_polygon(lat, lon, **kwargs))
@@ -293,7 +296,8 @@ class ancestors:
                         'filters': {
                             'wof:placetype_id' :  pt.id(),
                             'wof:is_superseded': 0,
-                            'wof:is_deprecated': 0                    
+                            'wof:is_deprecated': 0,
+                            'wof:is_ceased': 0
                         } ,
                         'as_feature': True,
                     }
@@ -425,7 +429,8 @@ class ancestors:
                 'filters': {
                     'wof:placetype_id' :  _pt.id(),
                     'wof:is_superseded': 0,
-                    'wof:is_deprecated': 0
+                    'wof:is_deprecated': 0,
+                    'wof:is_ceased': 0
                 } ,
                 'as_feature': True,
             }
