@@ -29,7 +29,7 @@ class ancestors:
     def debug(self, feature, msg):
 
         props = feature["properties"]
-        logging.debug("[%s][%s] %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), msg))
+        logging.debug("[hierarchy][%s][%s] %s" % (props["wof:id"], props.get("wof:name", "NO NAME"), msg))
 
     def rebuild_feature(self, feature, **kwargs):
 
