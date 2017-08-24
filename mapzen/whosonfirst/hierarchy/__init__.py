@@ -444,6 +444,31 @@ class ancestors:
                 match = True
                 break
 
+        # make sure that feature is always present in wof:hierarchy
+        # no matter what (20170824/thisisaaronland)
+
+        if not match:
+
+            wofid = props["wof:id"]
+            hiers = props["wof:hierarchy"]
+
+            pt_k = "%s_id" % props["wof:placetype"]
+
+            if len(hiers) == 0:
+
+                hiers = [
+                    { pt_k : wofid }
+                ]
+
+            else:
+
+                for h in hiers:
+                    
+                    if not h.has_key(pt_k):
+                        h[pt_k] = wofid
+
+            props["wof:hierarchy"] = hiers
+
         return match
 
     def append_possible_hierarchies(self, feature, possible, **kwargs):
