@@ -247,7 +247,8 @@ class ancestors:
 
         append = False
 
-        self.debug(feature, "possible reverse parents : %s" % ";".join(map(str, parents)))
+        str_parents = ";".join(map(str, parents))
+        self.debug(feature, "POSSIBLE reverse parents : %s for %s" % (str_parents, pt))
 
         # this is the meat of it - start looping through possible parents and see if there's
         # a match - be sure to append the hierarchies for any match
@@ -265,7 +266,7 @@ class ancestors:
 
             possible = list(self.spatial_client.point_in_polygon(lat, lon, **kwargs))
 
-            logging.debug("find parent (%s) for %s, %s : %s" % (p, lat, lon, len(possible)))
+            logging.debug("FIND parent (%s) for %s, %s : %s" % (p, lat, lon, len(possible)))
 
             if self.append_possible_hierarchies(feature, possible, set_parentid=True):
                 append = True
