@@ -350,7 +350,7 @@ class ancestors:
         # ensure that they are in the hierarchy
 
         pt = props["wof:placetype"]
-        pt = mapzen.whosonfirst.placetypes.placetype(p)
+        pt = mapzen.whosonfirst.placetypes.placetype(pt)
 
         # see what's happening? we're making a list of strings
 
@@ -367,6 +367,25 @@ class ancestors:
                 if not h.has_key(k):
                     self.debug(feature, "set %s to -1" % k)
                     h[k] = -1
+
+        # final check...
+
+        if len(feature['properties']['wof:hierarchy']) == 0:
+
+            pt_key = "%s_id" % props["wof:placetype"]
+            pt_id = props["wof:id"]
+
+            hier = {
+                pt_key: pt_id
+            }
+
+            for p in common:
+
+                pt_key = "%s_id" % p
+                pt_id = -1
+                hier[ pt_key ] = pt_id
+
+            feature['properties']['wof:hierarchy'] = [ hier ]
 
     def ensure_hierarchy(self, feature, **kwargs):
 
