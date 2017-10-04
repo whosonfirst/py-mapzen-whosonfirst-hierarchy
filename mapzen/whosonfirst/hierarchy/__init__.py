@@ -63,14 +63,20 @@ class ancestors:
 
         elif not "wof:hierarchy" in controlled:
 
-            logging.debug("wof:hierarchy in controlled")
+            logging.debug("wof:hierarchy not in controlled")
+
             logging.info("ensure hierarchy for %s" % wofid)
             self.ensure_hierarchy(feature, **kwargs)
 
         else:
 
+            # because this (20171003/thisisaaronland)
+            # https://github.com/whosonfirst-data/whosonfirst-data/issues/949#issuecomment-333975300
+
             logging.warning("not allowed to update either wof:parent_id or wof:hierarchy so there nothing to do for %s" % wofid)
-            return False
+
+            logging.info("ensure hierarchy for %s" % wofid)
+            self.ensure_hierarchy(feature, **kwargs)
 
         props = feature["properties"]
 
@@ -395,8 +401,8 @@ class ancestors:
 
         roles = kwargs.get("roles", [ "common", "common_optional", "optional" ] )
 
-        if props.get("wof:parent_id", 0) > 0:
-            logging.debug("not point in ensuring hierarchy for %s (%s): parent ID > 0" % (props["wof:id"], props.get("wof:name", "NO NAME")))
+        if int(props.get("wof:parent_id", 0)) > 0:
+            logging.debug("no point in ensuring hierarchy for %s (%s): parent ID > 0 (%s)" % (props["wof:id"], props.get("wof:name", "NO NAME"), props.get("wof:parent_id", 0)))
             return True
 
         if len(props.get("wof:hierarchy", [])) > 1:
@@ -460,9 +466,14 @@ class ancestors:
             logging.debug("ensure hierarchy for %s with placetype %s : %s possible" % (props["wof:id"], p, len(possible)))
 
             if self.append_possible_hierarchies(feature, possible):
-                logging.debug("successfully ensured hierarchy for %s with placetype %s" % (props["wof:id"], p))
-                match = True
-                break
+
+                if len(feature["properties"]["wof:hierarchy"]) >= 1:
+
+                    logging.debug("successfully ensured hierarchy for %s with placetype %s" % (props["wof:id"], p))
+                    match = True
+                    break
+
+                logging.warning("possible ancestor had no hierarchy")
 
         # make sure that feature is always present in wof:hierarchy
         # no matter what (20170824/thisisaaronland)
