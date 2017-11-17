@@ -75,8 +75,11 @@ class ancestors:
 
             logging.warning("not allowed to update either wof:parent_id or wof:hierarchy so there nothing to do for %s" % wofid)
 
-            logging.info("ensure hierarchy for %s" % wofid)
-            self.ensure_hierarchy(feature, **kwargs)
+            # maybe there are circumstances when we want to do this but for now it's hard to see
+            # what those circumstances are so don't do it... (20171116/thisisaaronland)
+
+            # logging.info("ensure hierarchy for %s" % wofid)
+            # self.ensure_hierarchy(feature, **kwargs)
 
         props = feature["properties"]
 
