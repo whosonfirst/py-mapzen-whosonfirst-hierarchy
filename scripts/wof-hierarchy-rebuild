@@ -5,6 +5,7 @@ import os
 import sys
 import logging
 import pprint
+import csv
 
 import mapzen.whosonfirst.hierarchy
 import mapzen.whosonfirst.utils
@@ -14,22 +15,29 @@ if __name__ == "__main__":
 
        import optparse
        opt_parser = optparse.OptionParser()
-	
+
        opt_parser.add_option('-C', '--client', dest='client', action='store', default='postgis', help="A valid mapzen.whosonfirst.spatial spatial client. (default is 'postgis')")
     
        opt_parser.add_option('-U', '--update', dest='update', action='store_true', default=False, help="... (default is False)")
        opt_parser.add_option('-D', '--data_root', dest='data_root', action='store', default='/usr/local/data', help="... (default is '/usr/local/data')")
+
+       opt_parser.add_option('-r', '--rebuild', dest='rebuild', action='store', default=False, help="... (path to metafile listing features to rebuild; default is False, and single path is prefered via arg)")
 
        opt_parser.add_option('--pgis-host', dest='pgis_host', action='store', default='localhost', help="...(default is 'localhost')")
        opt_parser.add_option('--pgis-username', dest='pgis_username', action='store', default='whosonfirst', help="... (default is 'whosonfirst')")
        opt_parser.add_option('--pgis-password', dest='pgis_password', action='store', default=None, help="... (default is None)")
        opt_parser.add_option('--pgis-database', dest='pgis_database', action='store', default='whosonfirst', help="... (default is 'whosonfirst')")
        
+       opt_parser.add_option('--pip-scheme', dest='pip_scheme', action='store', default='https', help="...(default is 'https')")
+       opt_parser.add_option('--pip-hostname', dest='pip_hostname', action='store', default='pip.mapzen.com', help="... (default is 'pip.mapzen.com')")
+       opt_parser.add_option('--pip-port', dest='pip_port', action='store', default=None, help="... (default is None)")
+       opt_parser.add_option('--pip-data_root', dest='pip_data_root', action='store', default='https://whosonfirst.mapzen.com', help="... (default is 'https://whosonfirst.mapzen.com')")
+
        opt_parser.add_option('-H', '--show-hierarchy', dest='show_hierarchy', action='store_true', default=False, help='... (default is False)')
        opt_parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False, help='Be chatty (default is false)')
        options, args = opt_parser.parse_args()
 
-       if options.verbose:	
+       if options.verbose:
               logging.basicConfig(level=logging.DEBUG)
        else:
               logging.basicConfig(level=logging.INFO)
@@ -52,18 +60,37 @@ if __name__ == "__main__":
        elif options.client == 'pip':
 
               import mapzen.whosonfirst.spatial.whosonfirst
-              sp_client = mapzen.whosonfirst.spatial.whosonfirst.pip()
+              
+              pip_args = { 
+                     "scheme": options.pip_scheme,
+                     "hostname": options.pip_hostname,
+                     "port": options.pip_port,
+                     "data_root": options.pip_data_root,
+              }
+
+              sp_client = mapzen.whosonfirst.spatial.whosonfirst.pip(**pip_args)
        
        else:
               raise Exception, "Unsupported spatial client"
               
        ancs = mapzen.whosonfirst.hierarchy.ancestors(spatial_client=sp_client)
 
-       for path in args:
+       if options.rebuild:
+            # CSV file to process
+            fh = open(options.rebuild, 'r')
+            rebuild = csv.DictReader(fh)
+            source = options.data_root + 'whosonfirst-data/data'
+       else:
+           rebuild = args
 
+       for path in rebuild:
               logging.info("rebuild hierarchy for %s" % path)
 
-              feature = mapzen.whosonfirst.utils.load_file(path)
+              if options.rebuild:
+                feature = mapzen.whosonfirst.utils.load(source, path["id"])
+              else:
+                feature = mapzen.whosonfirst.utils.load_file(path)
+
               changed = ancs.rebuild_feature(feature)
 
               props = feature["properties"]
