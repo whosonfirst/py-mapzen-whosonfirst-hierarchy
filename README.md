@@ -1,6 +1,12 @@
 # py-mapzen-whosonfirst-hierarchy
 
-Simple Python wrapper for Who's On First hierarchies. 
+Simple Python wrapper for Who's On First hierarchies.
+
+## Installation
+
+```
+sudo pip install -r requirements.txt .
+```
 
 ## Usage
 
@@ -84,7 +90,7 @@ ancs = mapzen.whosonfirst.hierarchy.ancestors(spatial_client=pg_client)
 updated_repos = ancs.rebuild_and_export_feature(feature, data_root=data_root)
 ```
 
-The `rebuild_descendants_and_export_feature` method will return a list of all the unique WOF repos which have records that have been changed. 
+The `rebuild_descendants_and_export_feature` method will return a list of all the unique WOF repos which have records that have been changed.
 
 It seems like it would be nice to be able to define your own callback, but today you can not.
 
@@ -101,7 +107,20 @@ Usage: wof-hierarchy-rebuild [options] /path/to/wof/record.geojson
 Options:
   -h, --help            show this help message and exit
   -C CLIENT, --client=CLIENT
-                        A valid mapzen.whosonfirst.spatial spatial client. Default is 'postgis'
+                        A valid mapzen.whosonfirst.spatial spatial client.
+                        (default is 'postgis')
+  -U, --update          ... (default is False)
+  -D DATA_ROOT, --data_root=DATA_ROOT
+                        ... (default is '/usr/local/data')
+  --pgis-host=PGIS_HOST
+                        ...(default is 'localhost')
+  --pgis-username=PGIS_USERNAME
+                        ... (default is 'whosonfirst')
+  --pgis-password=PGIS_PASSWORD
+                        ... (default is None)
+  --pgis-database=PGIS_DATABASE
+                        ... (default is 'whosonfirst')
+  -H, --show-hierarchy  ... (default is False)
   -v, --verbose         Be chatty (default is false)
 ```
 
