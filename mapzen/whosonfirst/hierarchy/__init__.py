@@ -217,7 +217,7 @@ class ancestors:
                         logging.error("post-rebuild callback failed for %s" % wofid)
 
                         if kwargs.get("strict", False):
-                            raise Exception, "post-rebuild callback failed for %s" % wofid
+                            raise Exception("post-rebuild callback failed for %s" % wofid)
 
                         continue
 
@@ -623,7 +623,7 @@ class ancestors:
         debug = kwargs.get("debug", False)
         
         if not data_root:
-            raise Exception, "You forgot to specify a data_root parameter"
+            raise Exception("You forgot to specify a data_root parameter")
 
         spatial_client = self.spatial_client
 
@@ -641,7 +641,7 @@ class ancestors:
                 # TBD so for now we default to being hyper-conservative
                 # (20170512/thisisaaronland)
 
-                raise Exception, "WOF ID %s (%s) does not have a wof:repo property" % (props["wof:id"], props.get("wof:name", "NO NAME"))
+                raise Exception("WOF ID %s (%s) does not have a wof:repo property" % (props["wof:id"], props.get("wof:name", "NO NAME")))
 
                 """
                 logging.warning("WOF ID %s (%s) does not have a wof:repo property" % (props["wof:id"], props.get("wof:name", "NO NAME")))

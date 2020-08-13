@@ -55,7 +55,7 @@ if __name__ == "__main__":
               sp_client = mapzen.whosonfirst.spatial.whosonfirst.pip()
        
        else:
-              raise Exception, "Unsupported spatial client"
+              raise Exception("Unsupported spatial client")
               
        ancs = mapzen.whosonfirst.hierarchy.ancestors(spatial_client=sp_client)
 
